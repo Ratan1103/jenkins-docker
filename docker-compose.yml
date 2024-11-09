@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  # Service for the React App
+  react-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"  # Map port 80 in the container to port 8080 on your host
+    depends_on:
+      - jenkins  # Ensure Jenkins is running before starting the app
+
+  # Service for Jenkins
+  jenkins:
+    image: jenkins/jenkins:lts
+    user: root  # Allow Jenkins to run as root for permissions
+    ports:
+      - "8081:8080"  # Jenkins UI
+      - "50000:50000"  # Jenkins agent communication
+    environment:
+      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false"
+    volumes:
+      - jenkins_data:/var/jenkins_home  # Persist Jenkins data
+      - /var/run/docker.sock:/var/run/docker.sock  # Allow Jenkins access to Docker
+    restart: always
+
+volumes:
+  jenkins_data:
